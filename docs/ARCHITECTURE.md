@@ -1,30 +1,12 @@
 # Architecture
 
-## Overview
+`@trysac/image-annotate-web` implements a framework-free annotation engine.
 
-`@trysac/image-annotate-web` is a small, dependency-free TypeScript library published to npm as ES modules with type
-declarations. Browser image annotation core: boxes, polygons and points with clamping, undo and redo, hit testing, view transforms and COCO or YOLO export
+## Design
 
-## Modules
-
-| Module | Responsibility |
-|---|---|
-| `src/index.ts` | Public API. Everything consumers import is exported from here. |
-
-Add a row when you add a module. Internal modules are not re-exported unless they are part of the public API.
-
-## Boundaries
-
-- No runtime dependencies by default; any addition is justified in [STACK.md](STACK.md).
-- No I/O at import time. Functions are pure unless their documentation says otherwise.
-- Errors are thrown as built-in error types (`TypeError`, `RangeError`) with actionable messages.
-
-## Build and distribution
-
-`npm run build` compiles `src/` to `dist/` with `tsconfig.build.json`. Only `dist/` is published
-(`files` in `package.json`).
-
-## Decisions
-
-Architectural decisions are recorded in [decisions/](decisions/), starting with
-[0001](decisions/0001-record-architecture-decisions.md).
+- **In-memory Document State**: Pure immutable data representation for shapes (`box`, `polygon`, `point`). Coordinates are stored strictly in image pixel space.
+- **Clamping & Normalization**: All coordinate inputs are clamped to image boundaries `[0, width] x [0, height]`. Inverted boxes with negative width or height are flipped into canonical `(x, y, w, h)` form.
+- **History Tracking**: Add, update, and remove actions push invertible mutation records onto an undo/redo stack capped at `maxHistory`.
+- **Spatial Queries**: Ray-casting even-odd algorithm for polygons, axis-aligned bounding check for boxes, and Euclidean distance tests for points.
+- **View Transforms**: Coordinate translations between viewport and image coordinate systems with zoom and pan.
+- **Export/Import**: Full bidirectional compatibility with the COCO object detection format and standard YOLO segmentation/box formats.
