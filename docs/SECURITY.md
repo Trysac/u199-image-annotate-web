@@ -1,28 +1,15 @@
-# Security practices
+# Security Policy
 
-How this repository keeps the package and its users safe. The disclosure policy is in
-[../SECURITY.md](../SECURITY.md).
+## Threat Model
 
-## Secrets
+The library handles user-provided data (JSON imports) and geometric inputs. It is hardened against common pitfalls in canvas/annotation tooling.
 
-- No secrets, tokens or credentials in the repository, commit history, logs or prompts.
-- `gitleaks` runs as the last step of `npm run check` and as a dedicated CI job. Its configuration is
-  `.gitleaks.toml`.
-- Publishing credentials live only in the CI secret store or the maintainer's local npm configuration.
+### Defended
 
-## Dependencies
+- **Denial of Service**: `importCoco` restricts input length (default 5,000,000 chars) to prevent heap exhaustion. Internal object creation is limited by `maxShapes` (default 10,000).
+- **Memory Exhaustion**: The undo/redo stack is bounded by `maxHistory` (default 200).
+- **Input Validation**: All coordinate inputs are clamped to `[0, width]` and `[0, height]`. Geometric shapes are validated (e.g., zero-area boxes, polygons with <3 points) and invalid payloads trigger `AnnotateError` rather than crashing.
 
-- Runtime dependencies are avoided; development dependencies are limited to the toolchain listed in
-  [STACK.md](STACK.md).
-- Dependabot opens weekly updates for npm packages and GitHub Actions.
-- Commit the generated `package-lock.json` so installs are reproducible.
+### Not Defended
 
-## Code
-
-- No `eval`, dynamic `Function` construction or shelling out from library code.
-- Inputs from callers are validated and rejected with explicit errors.
-
-## Publishing
-
-- Packages are published from a clean checkout after `npm run check` passes.
-- Only `dist/` is included in the published tarball.
+- **Arbitrary Code Execution**: As the library is a pure logic implementation, it relies on the host environment's security. It assumes the host application treats outputs (like exported JSON) as untrusted if passed to other systems.

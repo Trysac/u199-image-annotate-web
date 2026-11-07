@@ -9,4 +9,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Add image annotation core with clamping, undo/redo, hit testing, view transforms, and COCO/YOLO import/export.
 - Initial project structure from the factory utility template.

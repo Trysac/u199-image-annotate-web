@@ -1,55 +1,41 @@
-# image-annotate-web
+# @trysac/image-annotate-web
 
-[![npm version](https://img.shields.io/npm/v/@trysac/image-annotate-web.svg)](https://www.npmjs.com/package/@trysac/image-annotate-web)
-[![license: MIT](https://img.shields.io/npm/l/@trysac/image-annotate-web.svg)](LICENSE)
 [![CI](https://github.com/Trysac/u199-image-annotate-web/actions/workflows/ci.yml/badge.svg)](https://github.com/Trysac/u199-image-annotate-web/actions/workflows/ci.yml)
 
-Browser image annotation core: boxes, polygons and points with clamping, undo and redo, hit testing, view transforms and COCO or YOLO export
+Browser and Node.js core library for image annotation. Provides bounding boxes, polygons, and point shapes with automatic coordinate clamping, full undo/redo history, spatial hit testing, viewport coordinate transforms, and standard COCO and YOLO export/import formats.
 
-## Problem
+## The Problem
 
-Describe in two or three sentences the concrete problem this utility solves, who hits it, and why existing
-packages do not solve it well. Keep it factual; link to an issue or decision record when there is one.
+Labelling a few hundred images for a vision model does not justify deploying a heavy labelling platform, yet hand-rolled canvas tools often get coordinate math, undo stacks, and export formats subtly wrong, which silently corrupts training data. This library provides a tested, framework-free annotation engine for any canvas or SVG front end.
 
-## Install
+## Installation
 
-```sh
+```bash
 npm install @trysac/image-annotate-web
 ```
 
-Requires Node.js 20 or newer. The package ships ES modules with TypeScript declarations.
-
 ## Usage
 
-```ts
-import { greet } from "@trysac/image-annotate-web";
+```typescript
+import { createAnnotator, exportCoco } from '@trysac/image-annotate-web';
 
-// Build a greeting; surrounding whitespace is ignored.
-const message = greet("  Ada ");
-console.log(message); // "Hello, Ada!"
-
-try {
-  greet("   ");
-} catch (error) {
-  console.error((error as Error).message); // "name must not be empty"
-}
+const ann = createAnnotator({ width: 800, height: 600, labels: ['dog', 'cat'] });
+const id = ann.add({ kind: 'box', x: 50, y: 50, w: 200, h: 150, label: 'dog' });
+ann.update(id, { x: 60 });
+ann.undo();
+const coco = exportCoco(ann.doc(), { fileName: 'sample.jpg' });
 ```
 
-## API
+## Public API Summary
 
-| Export | Signature | Description |
-|---|---|---|
-| `greet` | `(name: string) => string` | Placeholder API; replace it with the real one. |
+- **Entry**: `createAnnotator(opts)` creates a controller. Options: `width`, `height`, `labels`, `maxShapes` (default 10,000), `maxHistory` (default 200).
+- **Controller**: `add`, `update`, `remove`, `undo`, `redo`, `hitTest`, `shapes`, `doc`.
+- **Transforms**: `viewToImage`, `imageToView`.
+- **IO**: `exportCoco`, `exportYolo`, `importCoco`.
+- **Errors**: `AnnotateError` with codes: `UNKNOWN_LABEL`, `INVALID_SHAPE`, `LIMIT_EXCEEDED`, `NOT_FOUND`, `INVALID_VIEW`, `INVALID_JSON`, `INPUT_TOO_LARGE`.
 
-## Development
+## Why not CVAT or Label Studio?
 
-```sh
-npm install
-npm run check   # lint, format, types, tests with coverage, docs, secrets
-```
+Those are server-based labelling platforms. This is a tiny, embeddable, framework-free TypeScript library that focuses solely on the mathematical core (clamping, transforms, and export) so you can build your own UI without dealing with state corruption.
 
-See [AGENTS.md](AGENTS.md) for the full command list and [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
-
-## License
-
-[MIT](LICENSE) © 2026 Miguel Gomez
+See [docs/SECURITY.md](docs/SECURITY.md) for vulnerability boundaries.
