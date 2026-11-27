@@ -10,9 +10,15 @@ Labelling a few hundred images for a vision model does not justify deploying a h
 
 ## Installation
 
-```bash
-npm install @trysac/image-annotate-web
+Not published to npm yet. Build it from a clone, then install it from the local path:
+
+```sh
+git clone https://github.com/Trysac/u199-image-annotate-web.git
+cd u199-image-annotate-web && npm ci && npm run build
+cd ../your-project && npm install ../u199-image-annotate-web
 ```
+
+Imports keep the package name: `import { ... } from "@trysac/image-annotate-web"`.
 
 ## Usage
 
